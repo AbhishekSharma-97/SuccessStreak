@@ -14,6 +14,7 @@ import NotificationScreen from '../screens/NotificationScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {colors} from '../theme/theme';
 const Tab = createBottomTabNavigator();
 
 const AppStack = () => {
@@ -39,8 +40,8 @@ const AppStack = () => {
             />
           );
         },
-        tabBarActiveTintColor: '#0099ff',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: colors.tabBarActive,
+        tabBarInactiveTintColor: colors.textLight,
       })}>
       <Tab.Screen name={'HomeScreen'} component={HomeScreen} />
       <Tab.Screen name={'StatisticsScreen'} component={StatisticsScreen} />
