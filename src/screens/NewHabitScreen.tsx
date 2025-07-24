@@ -56,7 +56,7 @@ const NewHabitScreen = () => {
             {activities.map(activity => (
               <TouchableOpacity
                 key={activity.id}
-                style={[styles.activityCircle, selectedActivity === activity.id && styles.selectedActivityCircle]}
+                style={[styles.activityCircle, {borderColor: colors.secondary}, selectedActivity === activity.id && styles.selectedActivityCircle]}
                 onPress={() => setSelectedActivity(activity.id)}>
                 <View style={[styles.iconContainer, selectedActivity === activity.id && styles.selectedIconContainer]}>{activity.icon}</View>
               </TouchableOpacity>
@@ -109,12 +109,12 @@ const NewHabitScreen = () => {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 10,
+              marginTop: 20,
               flex: 1,
             }}>
             <View
               style={{
                 gap: 10,
-                top: 20,
                 flex: 1,
               }}>
               <Text style={styles.repeatEveryText}>Repeat Every</Text>
@@ -139,7 +139,6 @@ const NewHabitScreen = () => {
             <View
               style={{
                 gap: 10,
-                top: 20,
                 flex: 1,
               }}>
               <Text style={styles.repeatEveryText}>Reminder</Text>
@@ -183,6 +182,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
     alignSelf: 'stretch',
+    paddingBottom: 20,
   },
   habitLabel: {
     fontSize: 18,
