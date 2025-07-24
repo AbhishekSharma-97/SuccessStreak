@@ -16,6 +16,17 @@ const NewHabitScreen = () => {
   const [habitTitle, setHabitTitle] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [selectedDays, setSelectedDays] = useState<boolean[]>([false, false, false, false, false, false, false]); // M-S
+
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  const toggleDay = (index: number) => {
+    setSelectedDays(prev => {
+      const updated = [...prev];
+      updated[index] = !updated[index];
+      return updated;
+    });
+  };
 
   const activities = [
     {id: 0, name: 'Weightlifting', icon: <WeightLift size={35} />},
@@ -31,139 +42,154 @@ const NewHabitScreen = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <>
       <CurvedHeader title="Add Habit" />
-
-      <View style={styles.contentContainer}>
-        <View style={styles.habitBox}>
-          <Text style={styles.habitLabel}>Habit Title</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter habit title..."
-              placeholderTextColor={colors.placeholder}
-              value={habitTitle}
-              onChangeText={setHabitTitle}
-            />
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.contentContainer}>
-        <View style={styles.habitBox}>
-          <Text style={styles.habitLabel}>Choose an activity</Text>
-          <View style={styles.activitiesGrid}>
-            {activities.map(activity => (
-              <TouchableOpacity
-                key={activity.id}
-                style={[styles.activityCircle, {borderColor: colors.secondary}, selectedActivity === activity.id && styles.selectedActivityCircle]}
-                onPress={() => setSelectedActivity(activity.id)}>
-                <View style={[styles.iconContainer, selectedActivity === activity.id && styles.selectedIconContainer]}>{activity.icon}</View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </View>
-      <View style={styles.contentContainer}>
-        <View style={styles.habitBox}>
-          <Text style={styles.habitLabel}>Frequency</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text>Daily</Text>
-            <Switch
-              value={frequency === 'daily'}
-              onValueChange={() => setFrequency('daily')}
-              trackColor={{
-                true: colors.secondaryLight,
-                false: colors.borderLight,
-              }}
-              thumbColor={frequency === 'daily' ? colors.secondary : colors.borderLight}
-            />
-            <Text>Weekly</Text>
-            <Switch
-              value={frequency === 'weekly'}
-              onValueChange={() => setFrequency('weekly')}
-              trackColor={{
-                true: colors.secondaryLight,
-                false: colors.borderLight,
-              }}
-              thumbColor={frequency === 'weekly' ? colors.secondary : colors.borderLight}
-            />
-            <Text>Monthly</Text>
-            <Switch
-              value={frequency === 'monthly'}
-              onValueChange={() => setFrequency('monthly')}
-              trackColor={{
-                true: colors.secondaryLight,
-                false: colors.borderLight,
-              }}
-              thumbColor={frequency === 'monthly' ? colors.secondary : colors.borderLight}
-            />
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              marginTop: 20,
-              flex: 1,
-            }}>
-            <View
-              style={{
-                gap: 10,
-                flex: 1,
-              }}>
-              <Text style={styles.repeatEveryText}>Repeat Every</Text>
-              <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    height: 40,
-                    flex: 1,
-                    paddingHorizontal: 10,
-                    paddingVertical: 0,
-                  },
-                ]}>
-                <TextInput
-                  style={[styles.input, {flex: 1, minWidth: 0}]}
-                  placeholder="Enter frequency"
-                  placeholderTextColor={colors.placeholder}
-                  // value and onChangeText for frequency input
-                />
-              </View>
-            </View>
-            <View
-              style={{
-                gap: 10,
-                flex: 1,
-              }}>
-              <Text style={styles.repeatEveryText}>Reminder</Text>
-              <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    height: 40,
-                    flex: 1,
-                    paddingHorizontal: 10,
-                    paddingVertical: 0,
-                  },
-                ]}>
-                <TextInput
-                  style={[styles.input, {flex: 1, minWidth: 0}]}
-                  placeholder="Fri,Sat 12:30 PM"
-                  placeholderTextColor={colors.placeholder}
-                  // value and onChangeText for frequency input
-                />
-              </View>
+      <ScrollView style={styles.container}>
+        <View style={styles.contentContainer}>
+          <View style={styles.habitBox}>
+            <Text style={styles.habitLabel}>Habit Title</Text>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter habit title..."
+                placeholderTextColor={colors.placeholder}
+                value={habitTitle}
+                onChangeText={setHabitTitle}
+              />
             </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.contentContainer}>
+          <View style={styles.habitBox}>
+            <Text style={styles.habitLabel}>Choose an activity</Text>
+            <View style={styles.activitiesGrid}>
+              {activities.map(activity => (
+                <TouchableOpacity
+                  key={activity.id}
+                  style={[styles.activityCircle, {borderColor: colors.secondary}, selectedActivity === activity.id && styles.selectedActivityCircle]}
+                  onPress={() => setSelectedActivity(activity.id)}>
+                  <View style={[styles.iconContainer, selectedActivity === activity.id && styles.selectedIconContainer]}>{activity.icon}</View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+        <View style={styles.contentContainer}>
+          <View style={styles.habitBox}>
+            <Text style={styles.habitLabel}>Frequency</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <Text>Daily</Text>
+              <Switch
+                value={frequency === 'daily'}
+                onValueChange={() => setFrequency('daily')}
+                trackColor={{
+                  true: colors.secondaryLight,
+                  false: colors.borderLight,
+                }}
+                thumbColor={frequency === 'daily' ? colors.secondary : colors.borderLight}
+              />
+              <Text>Weekly</Text>
+              <Switch
+                value={frequency === 'weekly'}
+                onValueChange={() => setFrequency('weekly')}
+                trackColor={{
+                  true: colors.secondaryLight,
+                  false: colors.borderLight,
+                }}
+                thumbColor={frequency === 'weekly' ? colors.secondary : colors.borderLight}
+              />
+              <Text>Monthly</Text>
+              <Switch
+                value={frequency === 'monthly'}
+                onValueChange={() => setFrequency('monthly')}
+                trackColor={{
+                  true: colors.secondaryLight,
+                  false: colors.borderLight,
+                }}
+                thumbColor={frequency === 'monthly' ? colors.secondary : colors.borderLight}
+              />
+            </View>
+            {frequency === 'weekly' && (
+              <View style={styles.weekDaysRow}>
+                {dayLabels.map((label, idx) => (
+                  <TouchableOpacity
+                    key={label}
+                    style={[styles.dayCheckbox, selectedDays[idx] && styles.dayCheckboxSelected]}
+                    onPress={() => toggleDay(idx)}>
+                    <Text style={[styles.dayLabel, selectedDays[idx] && styles.dayLabelSelected]}>{label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                marginTop: 20,
+                flex: 1,
+              }}>
+              {frequency !== 'daily' && (
+                <View
+                  style={{
+                    gap: 10,
+                    flex: 1,
+                  }}>
+                  <Text style={styles.repeatEveryText}>Repeat Every</Text>
+                  <View
+                    style={[
+                      styles.inputContainer,
+                      {
+                        height: 40,
+                        flex: 1,
+                        paddingHorizontal: 10,
+                        paddingVertical: 0,
+                      },
+                    ]}>
+                    <TextInput
+                      style={[styles.input, {flex: 1, minWidth: 0}]}
+                      placeholder="Enter frequency"
+                      placeholderTextColor={colors.placeholder}
+                      // value and onChangeText for frequency input
+                    />
+                  </View>
+                </View>
+              )}
+              <View
+                style={{
+                  gap: 10,
+                  flex: 1,
+                }}>
+                <Text style={styles.repeatEveryText}>Reminder</Text>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      height: 40,
+                      flex: 1,
+                      paddingHorizontal: 10,
+                      paddingVertical: 0,
+                    },
+                  ]}>
+                  <TextInput
+                    style={[styles.input, {flex: 1, minWidth: 0}]}
+                    placeholder="Fri,Sat 12:30 PM"
+                    placeholderTextColor={colors.placeholder}
+                    // value and onChangeText for frequency input
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </>
   );
 };
 
@@ -186,8 +212,9 @@ const styles = StyleSheet.create({
   },
   habitLabel: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: colors.textDark,
+    fontFamily: 'cursive',
+    fontWeight: 'bold',
     marginBottom: 15,
   },
   inputContainer: {
@@ -247,6 +274,35 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     marginTop: 10,
     textAlignVertical: 'center',
+  },
+  weekDaysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+    marginBottom: 10,
+    gap: 6,
+  },
+  dayCheckbox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderInput,
+    backgroundColor: colors.input,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayCheckboxSelected: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary,
+  },
+  dayLabel: {
+    color: colors.textLight,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  dayLabelSelected: {
+    color: colors.surface,
   },
 });
 
