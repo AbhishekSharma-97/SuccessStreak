@@ -1,9 +1,9 @@
-import { View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity } from 'react-native';
-import React, { useState } from 'react';
+import {View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity, ScrollView, Switch} from 'react-native';
+import React, {useState} from 'react';
 import CurvedHeader from '../components/CurvedHeader';
-import { colors } from '../theme/theme';
+import {colors} from '../theme/theme';
 import WeightLift from '../icons/WeightLift';
-import Cycling from '../icons/cycling';
+import Cycling from '../icons/Cycling';
 import Running from '../icons/Running';
 import Coding from '../icons/Coding';
 import WaterDrinking from '../icons/WaterDrinking';
@@ -15,22 +15,23 @@ import Instrument from '../icons/Instrument';
 const NewHabitScreen = () => {
   const [habitTitle, setHabitTitle] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const activities = [
-    { id: 0, name: 'Weightlifting', icon: <WeightLift size={35} /> },
-    { id: 1, name: 'Cycling', icon: <Cycling size={35} /> },
-    { id: 2, name: 'Running', icon: <Running size={35} /> },
-    { id: 3, name: 'Coding', icon: <Coding size={35} /> },
-    { id: 4, name: 'WaterDrinking', icon: <WaterDrinking size={35} /> },
-    { id: 5, name: 'Studying', icon: <Studying size={35} /> },
-    { id: 6, name: 'Meditation', icon: <Meditation size={35} /> },
-    { id: 7, name: 'NoPhone', icon: <NoPhone size={35} /> },
-    { id: 8, name: 'Instrument', icon: <Instrument size={35} /> },
-    { id: 9, name: 'More', icon: <Text style={styles.moreText}>More</Text> },
+    {id: 0, name: 'Weightlifting', icon: <WeightLift size={35} />},
+    {id: 1, name: 'Cycling', icon: <Cycling size={35} />},
+    {id: 2, name: 'Running', icon: <Running size={35} />},
+    {id: 3, name: 'Coding', icon: <Coding size={35} />},
+    {id: 4, name: 'WaterDrinking', icon: <WaterDrinking size={35} />},
+    {id: 5, name: 'Studying', icon: <Studying size={35} />},
+    {id: 6, name: 'Meditation', icon: <Meditation size={35} />},
+    {id: 7, name: 'NoPhone', icon: <NoPhone size={35} />},
+    {id: 8, name: 'Instrument', icon: <Instrument size={35} />},
+    {id: 9, name: 'More', icon: <Text style={styles.moreText}>More</Text>},
   ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <CurvedHeader title="Add Habit" />
 
       <View style={styles.contentContainer}>
@@ -52,28 +53,118 @@ const NewHabitScreen = () => {
         <View style={styles.habitBox}>
           <Text style={styles.habitLabel}>Choose an activity</Text>
           <View style={styles.activitiesGrid}>
-            {activities.map((activity) => (
+            {activities.map(activity => (
               <TouchableOpacity
                 key={activity.id}
-                style={[
-                  styles.activityCircle,
-                  selectedActivity === activity.id && styles.selectedActivityCircle
-                ]}
-                onPress={() => setSelectedActivity(activity.id)}
-              >
-                <View style={[
-                  styles.iconContainer,
-                  selectedActivity === activity.id && styles.selectedIconContainer
-                ]}>
-                  {activity.icon}
-                </View>
+                style={[styles.activityCircle, selectedActivity === activity.id && styles.selectedActivityCircle]}
+                onPress={() => setSelectedActivity(activity.id)}>
+                <View style={[styles.iconContainer, selectedActivity === activity.id && styles.selectedIconContainer]}>{activity.icon}</View>
               </TouchableOpacity>
             ))}
           </View>
-          <Text style={styles.selectGoalText}>Select a goal</Text>
         </View>
       </View>
-    </View>
+      <View style={styles.contentContainer}>
+        <View style={styles.habitBox}>
+          <Text style={styles.habitLabel}>Frequency</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <Text>Daily</Text>
+            <Switch
+              value={frequency === 'daily'}
+              onValueChange={() => setFrequency('daily')}
+              trackColor={{
+                true: colors.secondaryLight,
+                false: colors.borderLight,
+              }}
+              thumbColor={frequency === 'daily' ? colors.secondary : colors.borderLight}
+            />
+            <Text>Weekly</Text>
+            <Switch
+              value={frequency === 'weekly'}
+              onValueChange={() => setFrequency('weekly')}
+              trackColor={{
+                true: colors.secondaryLight,
+                false: colors.borderLight,
+              }}
+              thumbColor={frequency === 'weekly' ? colors.secondary : colors.borderLight}
+            />
+            <Text>Monthly</Text>
+            <Switch
+              value={frequency === 'monthly'}
+              onValueChange={() => setFrequency('monthly')}
+              trackColor={{
+                true: colors.secondaryLight,
+                false: colors.borderLight,
+              }}
+              thumbColor={frequency === 'monthly' ? colors.secondary : colors.borderLight}
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              flex: 1,
+            }}>
+            <View
+              style={{
+                gap: 10,
+                top: 20,
+                flex: 1,
+              }}>
+              <Text style={styles.repeatEveryText}>Repeat Every</Text>
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    height: 40,
+                    flex: 1,
+                    paddingHorizontal: 10,
+                    paddingVertical: 0,
+                  },
+                ]}>
+                <TextInput
+                  style={[styles.input, {flex: 1, minWidth: 0}]}
+                  placeholder="Enter frequency"
+                  placeholderTextColor={colors.placeholder}
+                  // value and onChangeText for frequency input
+                />
+              </View>
+            </View>
+            <View
+              style={{
+                gap: 10,
+                top: 20,
+                flex: 1,
+              }}>
+              <Text style={styles.repeatEveryText}>Reminder</Text>
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    height: 40,
+                    flex: 1,
+                    paddingHorizontal: 10,
+                    paddingVertical: 0,
+                  },
+                ]}>
+                <TextInput
+                  style={[styles.input, {flex: 1, minWidth: 0}]}
+                  placeholder="Fri,Sat 12:30 PM"
+                  placeholderTextColor={colors.placeholder}
+                  // value and onChangeText for frequency input
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -150,6 +241,12 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     textAlign: 'center',
     marginTop: 10,
+  },
+  repeatEveryText: {
+    fontSize: 14,
+    color: colors.textLight,
+    marginTop: 10,
+    textAlignVertical: 'center',
   },
 });
 
