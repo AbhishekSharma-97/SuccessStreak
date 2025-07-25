@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Text, StyleSheet, Dimensions, TouchableOpacity} from 'react-native';
 import React from 'react';
 import Svg, {Path, Defs, LinearGradient, Stop} from 'react-native-svg';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -18,23 +12,14 @@ interface CurvedHeaderProps {
 const CurvedHeader: React.FC<CurvedHeaderProps> = ({title, onBackPress}) => {
   return (
     <View style={styles.header}>
-      <Svg 
-        style={styles.svg} 
-        height="100%" 
-        width="100%" 
-        viewBox="0 0 400 200"
-        preserveAspectRatio="none"
-      >
+      <Svg style={styles.svg} height="100%" width="100%" viewBox={`0 0 400 ${Dimensions.get('window').height * 0.15}`} preserveAspectRatio="none">
         <Defs>
           <LinearGradient id="headerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop offset="0%" stopColor={colors.gradientStart} />
             <Stop offset="100%" stopColor={colors.gradientEnd} />
           </LinearGradient>
         </Defs>
-        <Path
-          fill="url(#headerGradient)"
-          d="M0,0 L400,0 L400,120 Q300,80 200,120 Q100,160 0,120 Z"
-        />
+        <Path fill="url(#headerGradient)" d="M0,0 L400,0 L400,120 Q300,80 200,120 Q100,160 0,120 Z" />
       </Svg>
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
@@ -48,7 +33,7 @@ const CurvedHeader: React.FC<CurvedHeaderProps> = ({title, onBackPress}) => {
 
 const styles = StyleSheet.create({
   header: {
-    height: Dimensions.get('window').height * 0.20,
+    height: Dimensions.get('window').height * 0.15,
     position: 'relative',
   },
   svg: {
@@ -76,4 +61,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CurvedHeader; 
+export default CurvedHeader;
