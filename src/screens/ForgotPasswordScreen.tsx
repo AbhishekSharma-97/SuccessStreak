@@ -10,24 +10,22 @@ import {useAuth} from '../context/AuthContext';
 
 type AuthStackParamList = {
   Login: undefined;
-  SignUp: undefined;
   ForgotPassword: undefined;
 };
 
-type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
+type ForgotPasswordScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
-const LoginScreen: React.FC = () => {
-  const navigation = useNavigation<LoginScreenNavigationProp>();
-  const {signIn} = useAuth();
+const ForgotPasswordScreen: React.FC = () => {
+  const navigation = useNavigation<ForgotPasswordScreenNavigationProp>();
+  const {resetPassword} = useAuth();
 
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
-    password?: string;
     general?: string;
   }>({});
+  const [success, setSuccess] = useState(false);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -39,28 +37,29 @@ const LoginScreen: React.FC = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
-    if (!password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = async () => {
+  const handleResetPassword = async () => {
     if (!validateForm()) return;
 
     setLoading(true);
     setErrors({});
 
     try {
-      const {error} = await signIn(email.trim(), password);
+      const {error} = await resetPassword(email.trim());
 
       if (error) {
         setErrors({general: error.message});
+      } else {
+        setSuccess(true);
+        Alert.alert('Reset Link Sent!', 'Please check your email for password reset instructions.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]);
       }
     } catch (error) {
       setErrors({general: 'An unexpected error occurred'});
@@ -69,12 +68,8 @@ const LoginScreen: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    navigation.navigate('ForgotPassword');
-  };
-
-  const handleSignUp = () => {
-    navigation.navigate('SignUp');
+  const handleBackToLogin = () => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -82,8 +77,8 @@ const LoginScreen: React.FC = () => {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue your success streak</Text>
+            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.subtitle}>Enter your email address and we'll send you a link to reset your password</Text>
           </View>
 
           <View style={styles.form}>
@@ -98,32 +93,25 @@ const LoginScreen: React.FC = () => {
               error={errors.email}
             />
 
-            <AuthInput
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              error={errors.password}
-            />
-
             {errors.general && (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{errors.general}</Text>
               </View>
             )}
 
-            <AuthButton title="Sign In" onPress={handleLogin} loading={loading} style={styles.loginButton} />
+            <AuthButton title="Send Reset Link" onPress={handleResetPassword} loading={loading} style={styles.resetButton} />
 
-            <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordContainer}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoTitle}>What happens next?</Text>
+              <Text style={styles.infoText}>• You'll receive an email with a password reset link</Text>
+              <Text style={styles.infoText}>• Click the link to create a new password</Text>
+              <Text style={styles.infoText}>• The link will expire in 24 hours for security</Text>
+            </View>
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={handleSignUp}>
-              <Text style={styles.signUpText}>Sign Up</Text>
+            <TouchableOpacity onPress={handleBackToLogin}>
+              <Text style={styles.backToLoginText}>Back to Sign In</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -176,34 +164,39 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 14,
   },
-  loginButton: {
+  resetButton: {
     marginTop: 8,
   },
-  forgotPasswordContainer: {
-    alignItems: 'center',
-    marginTop: 16,
+  infoContainer: {
+    backgroundColor: colors.surfaceLight,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 24,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
-  forgotPasswordText: {
-    color: colors.primary,
+  infoTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  infoText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 6,
+    lineHeight: 18,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 'auto',
     paddingTop: 32,
   },
-  footerText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  signUpText: {
+  backToLoginText: {
     color: colors.primary,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
 });
 
-export default LoginScreen;
+export default ForgotPasswordScreen;

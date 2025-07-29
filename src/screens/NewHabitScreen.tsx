@@ -1,4 +1,4 @@
-import {View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity, ScrollView, Switch} from 'react-native';
+import {View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity, ScrollView, Switch, Alert} from 'react-native';
 import React, {useState} from 'react';
 import CurvedHeader from '../components/CurvedHeader';
 import {colors} from '../theme/theme';
@@ -11,12 +11,17 @@ import Studying from '../icons/Studying';
 import Meditation from '../icons/Meditation';
 import NoPhone from '../icons/NoPhone';
 import Instrument from '../icons/Instrument';
+import {DatePickerModal, registerTranslation, enGB} from 'react-native-paper-dates';
+import {supabase} from '../supabaseClient';
+registerTranslation('en-GB', enGB);
 
 const NewHabitScreen = () => {
   const [habitTitle, setHabitTitle] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedDays, setSelectedDays] = useState<boolean[]>([false, false, false, false, false, false, false]); // M-S
+  const [range, setRange] = useState<{startDate: Date | undefined; endDate: Date | undefined}>({startDate: undefined, endDate: undefined});
+  const [open, setOpen] = useState(false);
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -42,9 +47,9 @@ const NewHabitScreen = () => {
   ];
 
   return (
-    <>
+    <View style={{flex: 1}}>
       <CurvedHeader title="Add Habit" />
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={{paddingBottom: 30, flexGrow: 1}}>
         <View style={styles.contentContainer}>
           <View style={styles.habitBox}>
             <Text style={styles.habitLabel}>Habit Title</Text>
@@ -127,6 +132,34 @@ const NewHabitScreen = () => {
                 ))}
               </View>
             )}
+            {frequency === 'monthly' && (
+              <View style={{marginTop: 15, marginBottom: 10}}>
+                <TouchableOpacity style={styles.dateRangeButton} onPress={() => setOpen(true)}>
+                  <Text style={styles.dateRangeButtonText}>
+                    {range.startDate && range.endDate
+                      ? `${range.startDate.toLocaleDateString()} - ${range.endDate.toLocaleDateString()}`
+                      : 'Select Date Range'}
+                  </Text>
+                </TouchableOpacity>
+                <DatePickerModal
+                  locale="en-GB"
+                  mode="range"
+                  visible={open}
+                  onDismiss={() => setOpen(false)}
+                  startDate={range.startDate}
+                  endDate={range.endDate}
+                  onConfirm={({startDate, endDate}: {startDate: Date | undefined; endDate: Date | undefined}) => {
+                    setOpen(false);
+                    setRange({startDate, endDate});
+                  }}
+                  saveLabel="Save"
+                  label="Select date range"
+                  startLabel="From"
+                  endLabel="To"
+                  animationType="slide"
+                />
+              </View>
+            )}
             <View
               style={{
                 flexDirection: 'row',
@@ -135,32 +168,30 @@ const NewHabitScreen = () => {
                 marginTop: 20,
                 flex: 1,
               }}>
-              {frequency !== 'daily' && (
+              <View
+                style={{
+                  gap: 10,
+                  flex: 1,
+                }}>
+                <Text style={styles.repeatEveryText}>Repeat Every</Text>
                 <View
-                  style={{
-                    gap: 10,
-                    flex: 1,
-                  }}>
-                  <Text style={styles.repeatEveryText}>Repeat Every</Text>
-                  <View
-                    style={[
-                      styles.inputContainer,
-                      {
-                        height: 40,
-                        flex: 1,
-                        paddingHorizontal: 10,
-                        paddingVertical: 0,
-                      },
-                    ]}>
-                    <TextInput
-                      style={[styles.input, {flex: 1, minWidth: 0}]}
-                      placeholder="Enter frequency"
-                      placeholderTextColor={colors.placeholder}
-                      // value and onChangeText for frequency input
-                    />
-                  </View>
+                  style={[
+                    styles.inputContainer,
+                    {
+                      height: 40,
+                      flex: 1,
+                      paddingHorizontal: 10,
+                      paddingVertical: 0,
+                    },
+                  ]}>
+                  <TextInput
+                    style={[styles.input, {flex: 1, minWidth: 0}]}
+                    placeholder="Enter frequency"
+                    placeholderTextColor={colors.placeholder}
+                    // value and onChangeText for frequency input
+                  />
                 </View>
-              )}
+              </View>
               <View
                 style={{
                   gap: 10,
@@ -188,8 +219,49 @@ const NewHabitScreen = () => {
             </View>
           </View>
         </View>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={async () => {
+            // Get current user
+            console.log('getting user');
+            const {
+              data: {user},
+              error: authError,
+            } = await supabase.auth.getUser();
+
+            console.log('the user', user);
+
+            if (authError || !user) {
+              Alert.alert('Error', 'Please sign in to create habits');
+              return;
+            }
+
+            // Prepare habit data with user ID
+            const habitData = {
+              user_id: user.id,
+              title: habitTitle,
+              activity: selectedActivity,
+              frequency,
+              selectedDays: frequency === 'weekly' ? selectedDays : null,
+              startDate: range.startDate ? range.startDate.toISOString() : null,
+              endDate: range.endDate ? range.endDate.toISOString() : null,
+            };
+
+            console.log('the habit data', habitData);
+
+            // Insert into Supabase
+            const {error} = await supabase.from('habits').insert([habitData]);
+            if (error) {
+              Alert.alert('Error', error.message);
+            } else {
+              Alert.alert('Success', 'Habit created!');
+            }
+          }}
+          activeOpacity={0.8}>
+          <Text style={styles.createButtonText}>Create</Text>
+        </TouchableOpacity>
       </ScrollView>
-    </>
+    </View>
   );
 };
 
@@ -303,6 +375,39 @@ const styles = StyleSheet.create({
   },
   dayLabelSelected: {
     color: colors.surface,
+  },
+  dateRangeButton: {
+    backgroundColor: colors.input,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.borderInput,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  dateRangeButtonText: {
+    color: colors.textDark,
+    fontSize: 16,
+  },
+  createButton: {
+    marginHorizontal: 20,
+    marginTop: 30,
+    marginBottom: 30,
+    backgroundColor: colors.secondary,
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  createButtonText: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
 
