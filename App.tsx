@@ -10,22 +10,39 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const handleDeepLink = async (event: {url: string}) => {
       // Check if the URL is an OAuth callback
+      console.log('Deep link received:', event.url);
       if (
         event.url.startsWith('https://rdbdsawmufeqyytxuvvv.supabase.co/auth/v1/callback') ||
         event.url.startsWith('successstreak://oauth/callback')
       ) {
-        // Refresh the session from Supabase
-        await supabase.auth.getSession();
-        // Optionally, you can trigger a UI update or navigation here
+        try {
+          // Parse the URL to get the authorization code
+          const url = new URL(event.url);
+          const code = url.searchParams.get('code');
+
+          if (code) {
+            // Exchange the authorization code for a session
+            const {error} = await supabase.auth.exchangeCodeForSession(code);
+
+            if (error) {
+              console.error('Error exchanging code for session:', error);
+            }
+          }
+        } catch (error) {
+          console.error('Error handling OAuth callback:', error);
+        }
       }
     };
+
     const subscription = Linking.addEventListener('url', handleDeepLink);
+
     // Handle the case where the app is opened from a cold start with a deep link
     Linking.getInitialURL().then(url => {
       if (url) {
         handleDeepLink({url});
       }
     });
+
     return () => {
       subscription.remove();
     };

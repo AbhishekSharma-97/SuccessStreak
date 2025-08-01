@@ -99,6 +99,7 @@ const SignUpScreen: React.FC = () => {
 
     try {
       const result = await signInWithGoogle();
+
       if (result && result.error) {
         setErrors({general: result.error.message});
       }

@@ -1,13 +1,13 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, ActivityIndicator} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {colors} from '../theme/theme';
-import AuthInput from '../components/AuthInput';
+import React, {useState} from 'react';
+import {ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import AuthButton from '../components/AuthButton';
+import AuthInput from '../components/AuthInput';
 import {useAuth} from '../context/AuthContext';
 import GoogleLogo from '../icons/Google';
+import {colors} from '../theme/theme';
 
 type AuthStackParamList = {
   Login: undefined;
@@ -75,6 +75,7 @@ const LoginScreen: React.FC = () => {
 
     try {
       const result = await signInWithGoogle();
+
       if (result && result.error) {
         setErrors({general: result.error.message});
       }

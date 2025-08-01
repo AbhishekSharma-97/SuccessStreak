@@ -101,11 +101,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
   const signInWithGoogle = async () => {
     try {
-      const {data, error} = await supabase.auth.signInWithOAuth({provider: 'google'});
+      const {data, error} = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'successstreak://oauth/callback',
+        },
+      });
+
+      if (error) {
+        return {error};
+      }
+
       if (data?.url) {
         await Linking.openURL(data.url);
       }
-      return {error};
+
+      return {error: null};
     } catch (error) {
       return {error};
     }
