@@ -3,11 +3,11 @@ import {View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platfor
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {colors, shadows} from '../theme/theme';
+import {colors} from '../theme/theme';
 import AuthInput from '../components/AuthInput';
 import AuthButton from '../components/AuthButton';
 import {useAuth} from '../context/AuthContext';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import GoogleLogo from '../icons/Google';
 
 type AuthStackParamList = {
   Login: undefined;
@@ -35,14 +35,12 @@ const SignUpScreen: React.FC = () => {
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
-    // Email validation
     if (!email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
     if (!password.trim()) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
@@ -55,7 +53,6 @@ const SignUpScreen: React.FC = () => {
       newErrors.password = 'Password must contain at least one number';
     }
 
-    // Confirm password validation
     if (!confirmPassword.trim()) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (password !== confirmPassword) {
@@ -99,12 +96,12 @@ const SignUpScreen: React.FC = () => {
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     setErrors({});
+
     try {
       const result = await signInWithGoogle();
       if (result && result.error) {
         setErrors({general: result.error.message});
       }
-      // No need to handle authUrl or open WebView
     } catch (error) {
       setErrors({general: 'An unexpected error occurred'});
     } finally {
@@ -159,11 +156,19 @@ const SignUpScreen: React.FC = () => {
 
             <AuthButton title="Create Account" onPress={handleSignUp} loading={loading} style={styles.signUpButton} />
 
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
             <TouchableOpacity style={[styles.googleButton, googleLoading && {opacity: 0.7}]} onPress={handleGoogleSignUp} disabled={googleLoading}>
               <View style={styles.googleButtonContent}>
-                <Icon name="google" size={20} color="#DB4437" style={{marginRight: 8}} />
+                <View style={styles.googleIconContainer}>
+                  <GoogleLogo />
+                </View>
                 <Text style={styles.googleButtonText}>Sign up with Google</Text>
-                {googleLoading && <ActivityIndicator size="small" color="#DB4437" style={{marginLeft: 8}} />}
+                {googleLoading && <ActivityIndicator size="small" color="#4285F4" style={{marginLeft: 8}} />}
               </View>
             </TouchableOpacity>
 
@@ -234,32 +239,61 @@ const styles = StyleSheet.create({
   },
   signUpButton: {
     marginTop: 8,
+    marginBottom: 24,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    shadowColor: colors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderLight,
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#DB4437',
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginTop: 12,
+    borderColor: '#e2e8f0',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   googleButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconContainer: {
+    marginRight: 12,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   googleButtonText: {
-    color: '#DB4437',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#374151',
+    fontSize: 15,
+    fontWeight: '500',
+    fontFamily: 'Roboto, sans-serif',
   },
   passwordRequirements: {
     backgroundColor: colors.surfaceLight,

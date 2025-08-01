@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {colors, shadows} from '../theme/theme';
+import {colors} from '../theme/theme';
 import AuthInput from '../components/AuthInput';
 import AuthButton from '../components/AuthButton';
 import {useAuth} from '../context/AuthContext';
+import GoogleLogo from '../icons/Google';
 
 type AuthStackParamList = {
   Login: undefined;
@@ -18,11 +19,12 @@ type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const {signIn} = useAuth();
+  const {signIn, signInWithGoogle} = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -32,14 +34,12 @@ const LoginScreen: React.FC = () => {
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
-    // Email validation
     if (!email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
     if (!password.trim()) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
@@ -66,6 +66,22 @@ const LoginScreen: React.FC = () => {
       setErrors({general: 'An unexpected error occurred'});
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setErrors({});
+
+    try {
+      const result = await signInWithGoogle();
+      if (result && result.error) {
+        setErrors({general: result.error.message});
+      }
+    } catch (error) {
+      setErrors({general: 'An unexpected error occurred'});
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -114,6 +130,22 @@ const LoginScreen: React.FC = () => {
             )}
 
             <AuthButton title="Sign In" onPress={handleLogin} loading={loading} style={styles.loginButton} />
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={[styles.googleButton, googleLoading && {opacity: 0.7}]} onPress={handleGoogleSignIn} disabled={googleLoading}>
+              <View style={styles.googleButtonContent}>
+                <View style={styles.googleIconContainer}>
+                  <GoogleLogo />
+                </View>
+                <Text style={styles.googleButtonText}>Sign in with Google</Text>
+                {googleLoading && <ActivityIndicator size="small" color="#4285F4" style={{marginLeft: 8}} />}
+              </View>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordContainer}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -178,6 +210,61 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: 8,
+    marginBottom: 24,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    shadowColor: colors.primary,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderLight,
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  googleButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconContainer: {
+    marginRight: 12,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleButtonText: {
+    color: '#374151',
+    fontSize: 15,
+    fontWeight: '500',
+    fontFamily: 'Roboto, sans-serif',
   },
   forgotPasswordContainer: {
     alignItems: 'center',
