@@ -5,7 +5,7 @@ import Config from 'react-native-config';
 
 // Hardcoded Supabase credentials
 const SUPABASE_URL = Config.SUPABASE_URL as string;
-console.log('SUPABASE_URL', SUPABASE_URL);
+
 const SUPABASE_ANON_KEY = Config.SUPABASE_ANON_KEY as string;
 
 export const supabase = createClient(

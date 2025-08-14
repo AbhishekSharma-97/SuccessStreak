@@ -223,13 +223,11 @@ const NewHabitScreen = () => {
           style={styles.createButton}
           onPress={async () => {
             // Get current user
-            console.log('getting user');
+
             const {
               data: {user},
               error: authError,
             } = await supabase.auth.getUser();
-
-            console.log('the user', user);
 
             if (authError || !user) {
               Alert.alert('Error', 'Please sign in to create habits');
@@ -246,8 +244,6 @@ const NewHabitScreen = () => {
               startDate: range.startDate ? range.startDate.toISOString() : null,
               endDate: range.endDate ? range.endDate.toISOString() : null,
             };
-
-            console.log('the habit data', habitData);
 
             // Insert into Supabase
             const {error} = await supabase.from('habits').insert([habitData]);

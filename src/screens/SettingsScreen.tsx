@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     marginHorizontal: 24,
     borderRadius: 12,
-    ...shadows.sm,
   },
   settingItem: {
     flexDirection: 'row',
@@ -158,7 +157,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    ...shadows.sm,
   },
   signOutText: {
     color: colors.textWhite,

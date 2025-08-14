@@ -10,7 +10,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const handleDeepLink = async (event: {url: string}) => {
       // Check if the URL is an OAuth callback
-      console.log('Deep link received:', event.url);
+
       if (
         event.url.startsWith('https://rdbdsawmufeqyytxuvvv.supabase.co/auth/v1/callback') ||
         event.url.startsWith('successstreak://oauth/callback')
