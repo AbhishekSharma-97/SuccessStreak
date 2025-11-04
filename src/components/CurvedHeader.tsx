@@ -19,7 +19,11 @@ const CurvedHeader: React.FC<CurvedHeaderProps> = ({title, onBackPress}) => {
             <Stop offset="100%" stopColor={colors.gradientEnd} />
           </LinearGradient>
         </Defs>
-        <Path fill="url(#headerGradient)" d="M0,0 L400,0 L400,120 Q300,80 200,120 Q100,160 0,120 Z" />
+        {/* Curve Path */}
+        {/* <Path fill="url(#headerGradient)" d="M0,0 L400,0 L400,120 Q300,80 200,120 Q100,160 0,120 Z" /> */}
+
+        {/* Straight Path */}
+        <Path fill="url(#headerGradient)" d="M0,0 L400,0 L400,120 L0,120 Z" />
       </Svg>
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={onBackPress}>
