@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {colors} from '../theme/theme';
 
 interface Tab {
   name: string;
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   floatingTab: {
-    backgroundColor: '#6366F1',
+    backgroundColor: colors.gradientStart,
     borderRadius: isSmallDevice ? 24 : isLargeDevice ? 32 : 28,
     width: isSmallDevice ? 48 : isLargeDevice ? 64 : 56,
     height: isSmallDevice ? 48 : isLargeDevice ? 64 : 56,

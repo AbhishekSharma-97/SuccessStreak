@@ -13,6 +13,9 @@ import NoPhone from '../icons/NoPhone';
 import Instrument from '../icons/Instrument';
 import {DatePickerModal, registerTranslation, enGB} from 'react-native-paper-dates';
 import {supabase} from '../supabaseClient';
+import dayjs from 'dayjs';
+import DateTimePicker from 'react-native-modal-datetime-picker';
+import {formatTo24, getDeviceTimezone} from '../utils/time';
 registerTranslation('en-GB', enGB);
 
 const NewHabitScreen = () => {
@@ -21,6 +24,9 @@ const NewHabitScreen = () => {
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedDays, setSelectedDays] = useState<boolean[]>([false, false, false, false, false, false, false]); // M-S
   const [range, setRange] = useState<{startDate: Date | undefined; endDate: Date | undefined}>({startDate: undefined, endDate: undefined});
+  const [reminderDate, setReminderDate] = useState<Date>(new Date());
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
+  console.log(timePickerOpen);
   const [open, setOpen] = useState(false);
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -45,6 +51,11 @@ const NewHabitScreen = () => {
     {id: 8, name: 'Instrument', icon: <Instrument size={35} />},
     {id: 9, name: 'More', icon: <Text style={styles.moreText}>More</Text>},
   ];
+
+  const onConfirmTime = (date: Date) => {
+    setReminderDate(date);
+    setTimePickerOpen(false);
+  };
 
   return (
     <View style={{flex: 1}}>
@@ -89,7 +100,7 @@ const NewHabitScreen = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text>Daily</Text>
+              <Text style={styles.frequencyLabel}>Daily</Text>
               <Switch
                 value={frequency === 'daily'}
                 onValueChange={() => setFrequency('daily')}
@@ -99,7 +110,7 @@ const NewHabitScreen = () => {
                 }}
                 thumbColor={frequency === 'daily' ? colors.secondary : colors.borderLight}
               />
-              <Text>Weekly</Text>
+              <Text style={styles.frequencyLabel}>Weekly</Text>
               <Switch
                 value={frequency === 'weekly'}
                 onValueChange={() => setFrequency('weekly')}
@@ -109,7 +120,7 @@ const NewHabitScreen = () => {
                 }}
                 thumbColor={frequency === 'weekly' ? colors.secondary : colors.borderLight}
               />
-              <Text>Monthly</Text>
+              <Text style={styles.frequencyLabel}>Monthly</Text>
               <Switch
                 value={frequency === 'monthly'}
                 onValueChange={() => setFrequency('monthly')}
@@ -173,30 +184,6 @@ const NewHabitScreen = () => {
                   gap: 10,
                   flex: 1,
                 }}>
-                <Text style={styles.repeatEveryText}>Repeat Every</Text>
-                <View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      height: 40,
-                      flex: 1,
-                      paddingHorizontal: 10,
-                      paddingVertical: 0,
-                    },
-                  ]}>
-                  <TextInput
-                    style={[styles.input, {flex: 1, minWidth: 0}]}
-                    placeholder="Enter frequency"
-                    placeholderTextColor={colors.placeholder}
-                    // value and onChangeText for frequency input
-                  />
-                </View>
-              </View>
-              <View
-                style={{
-                  gap: 10,
-                  flex: 1,
-                }}>
                 <Text style={styles.repeatEveryText}>Reminder</Text>
                 <View
                   style={[
@@ -208,13 +195,24 @@ const NewHabitScreen = () => {
                       paddingVertical: 0,
                     },
                   ]}>
-                  <TextInput
-                    style={[styles.input, {flex: 1, minWidth: 0}]}
-                    placeholder="Fri,Sat 12:30 PM"
-                    placeholderTextColor={colors.placeholder}
-                    // value and onChangeText for frequency input
-                  />
+                  <TouchableOpacity style={{flex: 1}} onPress={() => setTimePickerOpen(true)}>
+                    <TextInput
+                      style={[styles.input, {flex: 1, minWidth: 0}]}
+                      placeholder={dayjs(reminderDate).format('h:mm A')}
+                      placeholderTextColor={colors.placeholder}
+                      editable={false}
+                      // value and onChangeText for frequency input
+                    />
+                  </TouchableOpacity>
                 </View>
+                <DateTimePicker
+                  isVisible={timePickerOpen}
+                  mode="time"
+                  date={reminderDate}
+                  onConfirm={onConfirmTime}
+                  is24Hour={false}
+                  onCancel={() => setTimePickerOpen(false)}
+                />
               </View>
             </View>
           </View>
@@ -234,15 +232,21 @@ const NewHabitScreen = () => {
               return;
             }
 
+            const usedDate = reminderDate || new Date();
+            const formatted = formatTo24(usedDate);
+            const timezone = getDeviceTimezone();
+
             // Prepare habit data with user ID
             const habitData = {
               user_id: user.id,
               title: habitTitle,
-              activity: selectedActivity,
+              activity: activities[selectedActivity!].name,
               frequency,
-              selectedDays: frequency === 'weekly' ? selectedDays : null,
-              startDate: range.startDate ? range.startDate.toISOString() : null,
-              endDate: range.endDate ? range.endDate.toISOString() : null,
+              selected_days: frequency === 'weekly' ? selectedDays : null,
+              start_date: range.startDate ? range.startDate.toISOString() : null,
+              end_date: range.endDate ? range.endDate.toISOString() : null,
+              reminder_time: formatted,
+              timezone,
             };
 
             // Insert into Supabase
@@ -284,6 +288,11 @@ const styles = StyleSheet.create({
     fontFamily: 'cursive',
     fontWeight: 'bold',
     marginBottom: 15,
+  },
+  frequencyLabel: {
+    fontSize: 14,
+    color: colors.textLight,
+    textAlignVertical: 'center',
   },
   inputContainer: {
     backgroundColor: colors.input,
