@@ -5,6 +5,7 @@ import {Linking} from 'react-native';
 import RootNavigator from './src/navigation/RootNavigator';
 import {AuthProvider} from './src/context/AuthContext';
 import {supabase} from './src/supabaseClient';
+import './src/config/dayjs';
 
 function App(): React.JSX.Element {
   useEffect(() => {

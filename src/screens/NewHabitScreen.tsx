@@ -1,4 +1,4 @@
-import {View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity, ScrollView, Switch, Alert} from 'react-native';
+import {View, StyleSheet, Text, TextInput, Dimensions, TouchableOpacity, ScrollView, Switch, Alert, Modal} from 'react-native';
 import React, {useState} from 'react';
 import CurvedHeader from '../components/CurvedHeader';
 import {colors} from '../theme/theme';
@@ -16,11 +16,13 @@ import {supabase} from '../supabaseClient';
 import dayjs from 'dayjs';
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import {formatTo24, getDeviceTimezone} from '../utils/time';
+import {IconPicker} from '../components/IconPickers';
+import * as LucideIcons from 'lucide-react-native';
 registerTranslation('en-GB', enGB);
 
 const NewHabitScreen = () => {
   const [habitTitle, setHabitTitle] = useState('');
-  const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedDays, setSelectedDays] = useState<boolean[]>([false, false, false, false, false, false, false]); // M-S
   const [range, setRange] = useState<{startDate: Date | undefined; endDate: Date | undefined}>({startDate: undefined, endDate: undefined});
@@ -28,6 +30,7 @@ const NewHabitScreen = () => {
   const [timePickerOpen, setTimePickerOpen] = useState(false);
   console.log(timePickerOpen);
   const [open, setOpen] = useState(false);
+  const [iconPickerModalVisible, setIconPickerModalVisible] = useState(false);
 
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -39,22 +42,36 @@ const NewHabitScreen = () => {
     });
   };
 
-  const activities = [
-    {id: 0, name: 'Weightlifting', icon: <WeightLift size={35} />},
-    {id: 1, name: 'Cycling', icon: <Cycling size={35} />},
-    {id: 2, name: 'Running', icon: <Running size={35} />},
-    {id: 3, name: 'Coding', icon: <Coding size={35} />},
-    {id: 4, name: 'WaterDrinking', icon: <WaterDrinking size={35} />},
-    {id: 5, name: 'Studying', icon: <Studying size={35} />},
-    {id: 6, name: 'Meditation', icon: <Meditation size={35} />},
-    {id: 7, name: 'NoPhone', icon: <NoPhone size={35} />},
-    {id: 8, name: 'Instrument', icon: <Instrument size={35} />},
-    {id: 9, name: 'More', icon: <Text style={styles.moreText}>More</Text>},
+  const custom_icon = [
+    {id: 0, name: 'Weightlifting_Custom', icon: <WeightLift size={35} />},
+    {id: 1, name: 'Cycling_Custom', icon: <Cycling size={35} />},
+    {id: 2, name: 'Running_Custom', icon: <Running size={35} />},
+    {id: 3, name: 'Coding_Custom', icon: <Coding size={35} />},
+    {id: 4, name: 'WaterDrinking_Custom', icon: <WaterDrinking size={35} />},
+    {id: 5, name: 'Studying_Custom', icon: <Studying size={35} />},
+    {id: 6, name: 'Meditation_Custom', icon: <Meditation size={35} />},
+    {id: 7, name: 'NoPhone_Custom', icon: <NoPhone size={35} />},
+    {id: 8, name: 'Instrument_Custom', icon: <Instrument size={35} />},
+    {id: 9, name: 'More_Custom', icon: <Text style={styles.moreText}>More</Text>},
   ];
 
   const onConfirmTime = (date: Date) => {
     setReminderDate(date);
     setTimePickerOpen(false);
+  };
+
+  const isLucideIcon = (iconName: string | null) => {
+    if (!iconName) return false;
+    return !custom_icon.some(icon => icon.name === iconName);
+  };
+
+  const renderLucidIcon = (iconName: string | null, size: number = 35, color = colors.secondary) => {
+    const IconComp = LucideIcons[iconName as keyof typeof LucideIcons];
+    if (IconComp) {
+      const Icon = IconComp as React.ComponentType<{size: number; color?: string}>;
+      return <Icon size={size} color={color} />;
+    }
+    return null;
   };
 
   return (
@@ -78,16 +95,42 @@ const NewHabitScreen = () => {
 
         <View style={styles.contentContainer}>
           <View style={styles.habitBox}>
-            <Text style={styles.habitLabel}>Choose an activity</Text>
+            <Text style={styles.habitLabel}>Select an icon</Text>
             <View style={styles.activitiesGrid}>
-              {activities.map(activity => (
-                <TouchableOpacity
-                  key={activity.id}
-                  style={[styles.activityCircle, {borderColor: colors.secondary}, selectedActivity === activity.id && styles.selectedActivityCircle]}
-                  onPress={() => setSelectedActivity(activity.id)}>
-                  <View style={[styles.iconContainer, selectedActivity === activity.id && styles.selectedIconContainer]}>{activity.icon}</View>
-                </TouchableOpacity>
-              ))}
+              {custom_icon.map(cicon => {
+                const isMoreButton = cicon.id === 9;
+                const isLucideSelected = isMoreButton && isLucideIcon(selectedIcon);
+                const isSelected = selectedIcon === cicon.name || isLucideSelected;
+
+                return (
+                  <TouchableOpacity
+                    key={cicon.id}
+                    style={[
+                      styles.activityCircle,
+                      {borderColor: colors.secondary},
+                      isSelected && styles.selectedActivityCircle,
+                      isLucideSelected && styles.lucideIconCircle,
+                    ]}
+                    onPress={() => {
+                      if (cicon.id === 9) {
+                        setIconPickerModalVisible(true);
+                      } else {
+                        setSelectedIcon(cicon.name);
+                      }
+                    }}>
+                    <View style={[styles.iconContainer]}>
+                      {isMoreButton && isLucideIcon(selectedIcon) ? (
+                        <View style={styles.moreIconWrapper}>
+                          {renderLucidIcon(selectedIcon)}
+                          <View style={styles.editBadge}>{renderLucidIcon('Pencil', 8, 'white')}</View>
+                        </View>
+                      ) : (
+                        cicon.icon
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </View>
@@ -240,7 +283,7 @@ const NewHabitScreen = () => {
             const habitData = {
               user_id: user.id,
               title: habitTitle,
-              activity: activities[selectedActivity!].name,
+              activity: selectedIcon,
               frequency,
               selected_days: frequency === 'weekly' ? selectedDays : null,
               start_date: range.startDate ? range.startDate.toISOString() : null,
@@ -261,6 +304,26 @@ const NewHabitScreen = () => {
           <Text style={styles.createButtonText}>Create</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal visible={iconPickerModalVisible} animationType="slide" transparent={true} onRequestClose={() => setIconPickerModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select an Icon</Text>
+              <TouchableOpacity onPress={() => setIconPickerModalVisible(false)}>
+                <Text style={styles.modalCloseButton}>Close</Text>
+              </TouchableOpacity>
+            </View>
+            <IconPicker
+              iconColor={colors.secondary}
+              onSelect={iconName => {
+                setSelectedIcon(iconName);
+                setIconPickerModalVisible(false);
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -297,8 +360,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     backgroundColor: colors.input,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderWidth: 1,
     borderColor: colors.borderInput,
   },
@@ -325,15 +388,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   selectedActivityCircle: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.primaryLight,
     borderColor: colors.secondary,
   },
   iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  selectedIconContainer: {
-    // For selected icons, we might want to change the color
   },
   moreText: {
     fontSize: 12,
@@ -413,6 +473,71 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '80%',
+    paddingTop: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textDark,
+  },
+  modalCloseButton: {
+    fontSize: 16,
+    color: colors.secondary,
+    fontWeight: '600',
+  },
+  lucideIconCircle: {
+    borderStyle: 'dashed',
+    borderWidth: 2.5,
+  },
+  moreIconWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: colors.secondary,
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.surface,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  editBadgeIcon: {
+    fontSize: 10,
+    color: colors.surface,
+    fontWeight: 'bold',
   },
 });
 
